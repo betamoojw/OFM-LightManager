@@ -2,3 +2,4 @@
 
 Sperrt die automatische Ausgabe aller Lichtmanager.
 
+

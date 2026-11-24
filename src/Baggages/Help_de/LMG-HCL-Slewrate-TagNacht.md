@@ -11,3 +11,4 @@
 | **Aus** | Fallback auf `SlewRateDay` (kein Wechsel) |
 
 Per-Kanal — kein Master-Aggregat. Jeder Kanal entscheidet eigenständig.
+

@@ -14,3 +14,4 @@ Jedes Profil besitzt eine **Wochentag-/Sonderbedingungs-Maske** (16 Bit, davon 1
 | 11 | Winter |
 
 **Selektor-Spezifität**: Profile mit konkreter Wochentag-/Saison-Übereinstimmung gewinnen gegen Default-Fallback. Bei mehreren passenden Profilen gewinnt das Profil mit der höchsten Spezifität (Anzahl gesetzter, matchender Bits).
+

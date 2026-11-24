@@ -1,12 +1,12 @@
 ﻿### HCL-Saison-KO
 
-Kommunikationsobjekt **LM x: Sommer aktiv** (Eingang, 1 Bit, DPT 1.001).
+Kommunikationsobjekt **LM x: Eingang, Sommer=1** (Eingang, 1 Bit, DPT 1.001).
 
-Nur sichtbar wenn der Saison-Modus des Lichtmanagers auf **Per Objekt** eingestellt ist.
+Nur sichtbar, wenn die **Saisonale Umschaltung** des Lichtmanagers auf **Kommunikationsobjekt** steht.
 
-- Wert `1` = Sommer-Stützpunkte aktiv
-- Wert `0` = Winter-Stützpunkte aktiv (Standard)
+- Wert `1` = Sommer
+- Wert `0` = Winter
 
-Der zuletzt empfangene Zustand wird im Flash gespeichert und nach einem Neustart bzw. nach einer Neuprogrammierung automatisch wiederhergestellt.
+Steht unter **Lichtmanager → Allgemein** die Einstellung „Saisonalen Zustand speichern und beim nächsten Neustart als Vorbelegung nutzen?" auf **Ja**, wird der zuletzt empfangene Wert gespeichert und nach einem Neustart wiederhergestellt. Sonst gilt die dort eingestellte Vorbelegung (`Nichts (undefiniert)`, `Wert vom Bus lesen`, `Winter (0)` oder `Sommer (1)`).
 
-Bei den anderen Saison-Modi (Standard, Auto-DST, Festes Datum) wechselt der Manager automatisch; dieses KO ist dann nicht sichtbar.
+Bei den anderen Einstellungen (Aus, Automatisch, Festes Datum) wechselt der Lichtmanager selbst; dieses KO ist dann nicht sichtbar.

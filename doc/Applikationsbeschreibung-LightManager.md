@@ -41,7 +41,7 @@ Das Modul übernimmt die Berechnung der HCL-Sollwerte:
 - [HCL-Stützpunkte (F8)](#hcl-stützpunkte-f8)
 - [Per-Kanal-Sperre (F2)](#per-kanal-sperre-f2)
 - [Rückfallstrategie nach Per-Kanal-Sperre](#rückfallstrategie-nach-per-kanal-sperre)
-- [Externe Eingänge (F12)](#externe-eingänge-f12)
+- [Externe Eingänge (F12 + L6)](#externe-eingänge-f12--l6)
 - [Migration auf 0.4.0](#migration-auf-040)
 - [Migration auf 0.3.0](#migration-auf-030)
 - [Häufige Fehler und Lösungen](#häufige-fehler-und-lösungen)
@@ -65,6 +65,12 @@ Jeder Lichtmanager besitzt eine eigene Kurvenkonfiguration, optionale Saison-Pro
 Bei aktiviertem Lichtmanager erscheint unter „Allgemein" der Tab **Kanalauswahl**. Er enthält je Lichtmanager eine Zeile mit den Spalten **Kanal**, **Kanalaktivität** und **Beschreibung**.
 Nur aktivierte Lichtmanager erscheinen als eigener Tab „LM x" im Baum und werden in der Firmware ausgeführt. Die Beschreibung kann auch bei deaktivierten Lichtmanagern eingetragen werden.
 
+<!-- DOC Skip="1" -->
+Die Screenshots in dieser Beschreibung zeigen eine Beispielkonfiguration in der Applikation des Hue Gateways.
+
+<!-- DOC Skip="1" -->
+<kbd>![Kanalauswahl mit aktiviertem LM 1 und beschriftetem, deaktiviertem LM 2](pics/lm-kanalauswahl.png)</kbd>
+
 <!-- DOC HelpContext="Kanalaktivitaet" -->
 #### Kanalaktivität
 
@@ -84,6 +90,9 @@ Sollwerte werden aus der Lichtmanager-Kurve berechnet und bei Wertänderung als 
 ### Sperre (global)
 
 Sperrt die automatische Ausgabe aller Lichtmanager.
+
+<!-- DOC Skip="1" -->
+<kbd>![Seite Lichtmanager, Allgemein mit globaler Sperre](pics/lm-allgemein.png)</kbd>
 
 ### Sperr-Hierarchie
 
@@ -140,6 +149,9 @@ Hinweis:
 ### Status-KOs je Lichtmanager
 
 Jeder Kanal kann seine berechneten Sollwerte intern an angeschlossene Module (z. B. Hue-Gateway) und/oder als KNX-Status-KOs ausgeben. Datentyp und Timing werden pro Kanal konfiguriert.
+
+<!-- DOC Skip="1" -->
+<kbd>![HCL-Ausgang mit Status-KOs auf dem KNX-Bus](pics/lm-kanal-status-kos.png)</kbd>
 
 <!-- DOC HelpContext="HCL-Kanal-Ausgabe-Verwendung" -->
 #### Ausgabe verwenden
@@ -254,143 +266,111 @@ Die Maskierung `0x07` bedeutet: Validity-Bit für Übergangszeit (b2), Farbtempe
 ### Lichtmanager 1..N
 
 <!-- DOC HelpContext="HCL-Manager-18" -->
-Jeder Lichtmanager 1..N besitzt identischen Aufbau (HCL-Konfiguration):
+Jeder Lichtmanager 1..N besitzt identischen Aufbau. Die Kanalseite „LM x" ist in folgende Abschnitte gegliedert:
 
-- **Beschreibung**: Freie ETS-Bezeichnung des Lichtmanagers (auch in der Kanalauswahl editierbar).
-- **Suspendiert**: Der Lichtmanager bleibt projektiert, wird aber nicht ausgeführt.
-- **Lichtmanager Sperre (spezifisch)**: Sperrt nur den jeweiligen Manager.
-- **Erweiterte Kurve**: Kurventyp `FixedTime`, `SunPosition`, `Manual` oder `Astronomischer Sonnenstand`.
-- **Stützpunkte**: Bis zu 10 Stützpunkte je Manager (bei `FixedTime` oder `SunPosition`).
-- **Saison-Profil**: Optionale Sommer-/Winter-Stützpunkte (Modus `Standard`, `Auto-DST`, `Festes Datum` oder `Per Objekt`).
-- **Adaptive Helligkeit**: Optionale Tageslicht-Kompensation (Open-Loop) oder Konstantlichtregelung (Closed-Loop) per Helligkeitssensor.
+- **Kanaldefinition**: Beschreibung und Suspendiert.
+- **HCL-Ausgang**: HCL-Achsen, HCL-Zeitfenster, Bereitstellung der Lichtmanager-Sollwerte und Status-KOs (siehe [Status-KOs je Lichtmanager](#status-kos-je-lichtmanager)).
+- **Profile**: Anzahl Profile (1–4). Jedes Profil hat eine eigene Unterseite mit Wochentagen, Saison und bis zu 10 Stützpunkten.
+- **Externe Eingänge & Steuerobjekte**: Sperr-Verhalten mit Rückfallstrategie, adaptive Helligkeit, Tag/Nacht-Quelle sowie externe Farbtemperatur- und Helligkeitsquelle.
+- **Saisonale Umschaltung**: Wechsel zwischen Sommer- und Winter-Profilen (siehe [Saison-Profil](#saison-profil)).
+- **Sende-Verhalten**: Aktualisierungsintervall.
+- **Vorausschau & Fortschritt**: optionale KOs zum nächsten Stützpunkt und zum Tagesverlauf.
+
+Im Baum liegen unter jedem Lichtmanager die Unterseiten **HCL-Kurve**, **Profil 1..n** und, wenn aktiviert, **Adaptive Helligkeit**.
 <!-- DOCEND -->
+
+<!-- DOC Skip="1" -->
+<kbd>![Kanalseite eines Lichtmanagers](pics/lm-kanal.png)</kbd>
 
 Jeder Manager besitzt identischen Aufbau:
 
 #### Beschreibung
-Freie ETS-Bezeichnung des Lichtmanagers. Sie erscheint im Tab-Namen und in den KO-Texten.
+Freie ETS-Bezeichnung des Lichtmanagers. Sie erscheint im Baum („LM x: Beschreibung"), in der Kanalauswahl und in den KO-Texten.
 
 #### Suspendiert
 Der Lichtmanager bleibt projektiert und sichtbar, wird aber von der Firmware nicht ausgeführt (keine Sollwerte, keine KOs). Im Baum wird er als suspendiert markiert.
 
-#### Lichtmanager Sperre (spezifisch)
-Sperrt nur den jeweiligen Lichtmanager.
-Alle Konsumenten-Kanäle, die diesem Lichtmanager zugeordnet sind, erhalten während der Sperre keine automatischen Sollwerte mehr.
+#### Sperr-Verhalten
+Legt fest, ob und wie der Lichtmanager gesperrt werden kann:
+- **Nein**: keine Sperre.
+- **Vollsperre**: Das KO `LM x: Eingang, Sperre=1` sperrt Helligkeit und Farbtemperatur gemeinsam.
+- **Getrennt (Helligkeit / Farbtemperatur)**: Zwei KOs sperren Helligkeit bzw. Farbtemperatur einzeln.
 
-Optionen je Manager:
-- **Rückfallzeit nach Sperre**
-- **Rückfallstrategie nach Sperre**: zentrale Vorgabe, siehe Abschnitt [Rückfallstrategie nach Sperre](#rückfallstrategie-nach-sperre)
+Während einer Sperre erhalten die zugeordneten Konsumenten-Kanäle keine automatischen Sollwerte. Wann die Sperre wieder aufgehoben wird, legen **Rückfallstrategie nach Sperre** und **Rückfallzeit nach Sperre** fest, siehe [Per-Kanal-Sperre (F2)](#per-kanal-sperre-f2) und [Rückfallstrategie nach Per-Kanal-Sperre](#rückfallstrategie-nach-per-kanal-sperre).
 
-KOs je Lichtmanager:
-- `Sperre Lichtmanager x` (Eingang)
-- `Status Sperre Lichtmanager x` (Ausgang)
-
-#### Erweiterte Kurve
-Kurventyp:
-- **FixedTime**
-- **SunPosition**
-- **Manual**
-- **Astronomischer Sonnenstand**
-
-Erweiterte Parameter je Manager:
-- **Slew-Rate (K/min)**: begrenzt die Kelvin-Änderung pro Minute (`0` = keine Begrenzung).
-- **Manuelle Farbtemperatur**: fixer Kelvin-Sollwert bei Kurventyp `Manual` (Bereich `2000..6500 K`).
-- **Sonnenaufgang/Sonnenuntergang** und **Offsets (min)**: relevant für Kurventyp `SunPosition`.
-- **Astro Min/Max Kelvin** und **Astro Min/Max Helligkeit**: relevant für Kurventyp `Astronomischer Sonnenstand`.
-
-Kurventypen im Detail:
-1. **FixedTime**
-	Lineare Interpolation zwischen klassischen Stützpunkten aus Zeit, Helligkeit und Farbtemperatur.
-2. **SunPosition**
-	Nutzt ebenfalls Stützpunkte, richtet die Tagesform aber an Sonnenaufgang und Sonnenuntergang mit konfigurierbaren Offsets aus.
-	Die Minimal- und Maximalwerte werden aus den gesetzten Stützpunkten abgeleitet.
-3. **Manual**
-	Verwendet eine feste Farbtemperatur aus dem Parameter **Manuelle Farbtemperatur**.
-	Optionale Stützpunkte beeinflussen in diesem Modus nur den Helligkeitsverlauf.
-4. **Astronomischer Sonnenstand**
-	Verwendet keine Stützpunkte.
-	Helligkeit und Farbtemperatur werden direkt aus dem Sonnenstand berechnet und zwischen den Astro-Min-/Max-Werten skaliert.
-	Grundlage sind die OpenKNX-Basisparameter für Standort und Zeitzone.
+#### HCL-Kurve
+Unterseite mit den Übergangs- und Astro-Parametern:
+- **Tag/Nacht-Slew verwenden**: getrennte Slew-Rate für Tag und Nacht, siehe [HCL-Slewrate Tag/Nacht (F5)](#hcl-slewrate-tagnacht-f5-per-kanal).
+- **Slew Rate Tag** bzw. **Nacht** (K/min, `0` = keine Begrenzung): begrenzt die Änderung der Farbtemperatur pro Minute.
+- **Slew-Rate Helligkeit** (%/min): begrenzt die Änderung der Helligkeit pro Minute.
+- **Astro-Quelle**: `Automatisch (Master-Geo)` berechnet Sonnenauf- und -untergang aus Standort und Zeitzone der OpenKNX-Basisparameter; `Manuell (Per-Kanal Sunrise/Sunset)` verwendet die Zeiten **Sonnenaufgang** und **Sonnenuntergang** dieses Lichtmanagers.
 
 #### Stützpunkte
-Bis zu 10 Stützpunkte je Manager bei Kurventyp `FixedTime` oder `SunPosition`.
+Die Stützpunkte werden je Profil auf dessen Unterseite gepflegt, bis zu 10 je Profil. Ihre Anzahl legt **Profil x Stützpunkte** fest. Die Tabelle hat folgende Spalten:
+
+| Spalte | Bedeutung |
+|---|---|
+| **Typ** | `Feste Uhrzeit`, `Sonnenaufgang`, `Sonnenuntergang`, `Bürgerl. Dämmerung Anfang`, `Bürgerl. Dämmerung Ende` oder `Solarer Mittag` |
+| **Std / Min** | Uhrzeit, nur bei Typ `Feste Uhrzeit` |
+| **Offset** | Verschiebung gegenüber dem Astro-Ereignis in Minuten, nur bei den Astro-Typen |
+| **Nicht vor/nach** | `Deaktiviert`, `Nicht vor` oder `Nicht nach`: begrenzt den Stützpunkt auf die dahinter eingetragene Uhrzeit (Std / Min) |
+| **Helligkeit** | Helligkeit in % |
+| **Farbtemperatur** | Farbtemperatur in K |
+| **Externe Farbtemperatur** / **Mix** | Nur bei eingestellter externer Farbtemperatur-Quelle: `Aus`, `Immer (übersteuern)`, `Nur wenn extern größer` oder `Nur wenn extern kleiner`, dazu der Mischanteil in % |
 
 Hinweise:
-- Bei `FixedTime` und `SunPosition` sind mindestens 2 gültige Zeit-Stützpunkte erforderlich.
-- Nicht alle 10 Stützpunkte müssen belegt werden; unbenutzte Einträge werden ignoriert.
-- Bei `Manual` sind Stützpunkte optional; wenn sie gesetzt werden, definieren sie Zeit + Helligkeit, die Farbtemperatur kommt aus dem Parameter **Manuelle Farbtemperatur**.
-- Bei `Manual` ohne Stützpunkte bleibt die Helligkeit konstant auf `100 %`, die Farbtemperatur auf dem konfigurierten manuellen Kelvin-Wert.
-- Bei `Astronomischer Sonnenstand` werden keine Stützpunkte verwendet; stattdessen werden Minimal- und Maximalwerte für Kelvin und Helligkeit genutzt.
-- Die letzte Zeit eines Tages gilt bis zum ersten Stützpunkt des nächsten Tages.
+- Nicht alle 10 Stützpunkte müssen belegt werden.
+- Zwischen den Stützpunkten wird linear interpoliert. Der letzte Stützpunkt eines Tages gilt bis zum ersten Stützpunkt des nächsten Tages.
+- Astro-Stützpunkte wandern mit dem Jahresverlauf. Mit **Nicht vor/nach** lässt sich verhindern, dass z. B. „Sonnenaufgang" im Sommer zu früh liegt.
 
-Beispiel:
-- SP1 `06:00 / 3000K / 30%`
-- SP2 `12:00 / 5000K / 90%`
-- SP3 `20:00 / 2400K / 35%`
+Beispiel (Vorbelegung von Profil 1):
+- SP1 `Feste Uhrzeit 06:00 / 30 % / 2700 K`
+- SP2 `Feste Uhrzeit 12:00 / 80 % / 5000 K`
+- SP3 `Feste Uhrzeit 22:00 / 20 % / 2700 K`
 
 Praxisregel:
 - `Aktualisierungsintervall`, `Überblendzeit` und `Slew-Rate` gemeinsam abstimmen, damit Übergänge ruhig bleiben.
 - Throttle-Semantik (Variante A): Während des Aktualisierungsintervalls werden keine Zwischenwerte gesendet. Nach Ablauf des Intervalls wird der **dann aktuelle** Sollwert gesendet, auch wenn er sich zwischenzeitlich wieder dem zuletzt gesendeten Wert angeglichen hat.
-- Bei `Datentyp = Kombiniert (DPT 249.600)` übernimmt der Aktor die Überblendzeit direkt aus dem Telegramm — Slew-Rate und Einzel-KOs werden in diesem Fall nicht benötigt.
+- Bei **Status-KO-Ausgabe** `Nur Kombi (6B DPT-249-600)` übernimmt der Aktor die Überblendzeit direkt aus dem Telegramm — Slew-Rate und Einzel-KOs werden in diesem Fall nicht benötigt.
 - Empfehlung: `Überblendzeit ≤ Aktualisierungsintervall`, sonst läuft ein noch aktiver Überblendvorgang in den nächsten Sollwert hinein.
-- Empfehlung MDT AKD: `Datentyp = Alle`, `Überblendzeit = 6–30 s`, `Slew-Rate = 0` (der Aktor übernimmt die Glättung).
+- Empfehlung MDT AKD: **Status-KO-Ausgabe** `Alle (1B + 2B + 6B parallel)`, `Überblendzeit = 6–30 s`, `Slew-Rate = 0` (der Aktor übernimmt die Glättung).
 
 ### Saison-Profil
 
-Das Saison-Profil ermöglicht es, für jeden Lichtmanager zwei voneinander unabhängige Stützpunkt-Sätze zu hinterlegen: einen für **Sommer** und einen für **Winter**. Der Lichtmanager wechselt automatisch oder auf KNX-Befehl zwischen den beiden Profilen.
+Mit der saisonalen Umschaltung kann ein Lichtmanager im Sommer andere Profile verwenden als im Winter, z. B. „Werktag Sommer" und „Werktag Winter" mit unterschiedlichen Stützpunkten.
 
-**Hintergrund**: Im Sommer steht die Sonne bei Sonnenuntergang (z. B. 19:00 Uhr) noch hoch, der Himmel ist hell und das Auge nimmt warmes Licht als „zu gelb" wahr. Im Winter hingegen ist die Dämmerung um dieselbe Uhrzeit längst abgeschlossen — warmes Licht fühlt sich natürlicher an. Mit dem Saison-Profil können beide Situationen optimal parametriert werden, ohne zwei separate Lichtmanager anlegen zu müssen.
+**Hintergrund**: Im Sommer steht die Sonne bei Sonnenuntergang (z. B. 19:00 Uhr) noch hoch, der Himmel ist hell und das Auge nimmt warmes Licht als „zu gelb" wahr. Im Winter hingegen ist die Dämmerung um dieselbe Uhrzeit längst abgeschlossen — warmes Licht fühlt sich natürlicher an. Mit der saisonalen Umschaltung lassen sich beide Situationen parametrieren, ohne zwei separate Lichtmanager anlegen zu müssen.
 
-#### Saison-Modus
+Zwei Einstellungen wirken zusammen:
+1. **Saisonale Umschaltung** auf der Kanalseite des Lichtmanagers legt fest, woher die Information „Sommer" oder „Winter" kommt (siehe unten).
+2. **Saison** auf jeder Profil-Unterseite legt fest, wann das Profil gilt: `Sommer + Winter`, `Sommer`, `Winter` oder `Fallback`. Der Parameter erscheint nur, wenn die saisonale Umschaltung nicht auf `Aus` steht.
 
-Der Parameter **Saison-Modus** legt fest, wie der Wechsel zwischen Sommer- und Winter-Stützpunkten ausgelöst wird:
+#### Saisonale Umschaltung
 
-| Modus | Beschreibung |
+| Einstellung | Beschreibung |
 |---|---|
-| **Standard** | Immer Winter-Stützpunkte aktiv. Sommer-Stützpunkte werden ignoriert. |
-| **Auto-DST** | Automatischer Wechsel anhand der mitteleuropäischen Sommerzeit (MESZ). Sommer = letzter Sonntag März bis letzter Sonntag Oktober. Kein ETS-Eingriff nötig. |
-| **Festes Datum** | Sommer gilt zwischen zwei konfigurierbaren Daten (Tag+Monat). Ermöglicht individuelle Anpassung an lokale Verhältnisse oder persönliche Präferenzen. |
-| **Per Objekt** | Das KNX-Kommunikationsobjekt **LM x: Sommer aktiv** steuert den Wechsel. Der Zustand wird im Flash persistiert und bleibt nach Neuprogrammierung erhalten. |
+| **Aus** | Keine Saison-Auswertung. Profile mit der Saison `Sommer` oder `Winter` werden nicht gewählt. |
+| **Automatisch (Astro + Offset)** | Sommer und Winter werden automatisch bestimmt. **Saison-Offset** (−90…+90 Tage) verschiebt den Wechsel. |
+| **Festes Datum** | Sommer gilt von **Sommer-Beginn** (Monat, Tag) bis **Sommer-Ende** (Monat, Tag). Ein Zeitraum über den Jahreswechsel ist möglich (Südhalbkugel). |
+| **Kommunikationsobjekt** | Das KO `LM x: Eingang, Sommer=1` schaltet zwischen Sommer und Winter um. |
 
-Bei Modus **Standard** sind keine Sommer-Stützpunkte erforderlich; die Spalten werden in ETS ausgeblendet.
+Beispiel „Festes Datum": Sommer-Beginn `1. April`, Sommer-Ende `30. September`.
 
-#### Parameter bei Modus „Festes Datum"
+Ob der zuletzt empfangene Zustand des KOs gespeichert wird und womit nach einem Neustart vorbelegt wird, steht unter **Lichtmanager → Allgemein**, Abschnitt „Saisonale Umschaltung (global)".
 
-- **Sommer Start (Tag)** / **Sommer Start (Monat)**: Beginn des Sommerprofils (inklusiv).
-- **Sommer Ende (Tag)** / **Sommer Ende (Monat)**: Ende des Sommerprofils (inklusiv).
-- **DST-Offset (Tage)**: Optionaler Vorlauf/Nachlauf in Tagen (Bereich `-30..+30`, Standard `0`).
-
-Beispiel: Start `01.04.`, Ende `31.10.` entspricht grob der MESZ — identisch mit Auto-DST, aber manuell justierbar.
-
-#### Sommer-Stützpunkte
-
-Bei aktivem Saison-Modus (nicht `Standard`) erscheint in ETS für jeden Stützpunkt eine zweite Spalte:
-
-| Spalte | Beschreibung |
-|---|---|
-| **Sommer Aktiv** | Checkbox: Stützpunkt im Sommer-Profil verwenden. Inaktive Stützpunkte werden ignoriert. |
-| **Sommer Kelvin** | Farbtemperatur für diesen Stützpunkt im Sommer (2000–6500 K). |
-| **Sommer Helligkeit** | Helligkeit für diesen Stützpunkt im Sommer (0–100 %). |
-
-Zeit und Sichtbarkeit des Stützpunkts bleiben für beide Profile gleich — nur Kelvin und Helligkeit werden saisonal überschrieben.
-
-Hinweise:
-- Nicht alle Stützpunkte müssen einen Sommer-Wert haben. Stützpunkte mit deaktiviertem **Sommer Aktiv** werden im Sommer-Profil übersprungen.
-- Im Sommer-Profil müssen mindestens 2 aktive Stützpunkte vorhanden sein (bei Kurventyp `FixedTime` oder `SunPosition`), sonst fällt der Manager auf das Winter-Profil zurück.
-
-#### KO: LM x: Sommer aktiv (nur Modus „Per Objekt")
+#### KO: LM x: Eingang, Sommer=1
 
 <!-- DOC HelpContext="HCL-Saison-KO" -->
-Kommunikationsobjekt **LM x: Sommer aktiv** (Eingang, 1 Bit, DPT 1.001).
+Kommunikationsobjekt **LM x: Eingang, Sommer=1** (Eingang, 1 Bit, DPT 1.001).
 
-Nur sichtbar wenn der Saison-Modus des Lichtmanagers auf **Per Objekt** eingestellt ist.
+Nur sichtbar, wenn die **Saisonale Umschaltung** des Lichtmanagers auf **Kommunikationsobjekt** steht.
 
-- Wert `1` = Sommer-Stützpunkte aktiv
-- Wert `0` = Winter-Stützpunkte aktiv (Standard)
+- Wert `1` = Sommer
+- Wert `0` = Winter
 
-Der zuletzt empfangene Zustand wird im Flash gespeichert und nach einem Neustart bzw. nach einer Neuprogrammierung automatisch wiederhergestellt.
+Steht unter **Lichtmanager → Allgemein** die Einstellung „Saisonalen Zustand speichern und beim nächsten Neustart als Vorbelegung nutzen?" auf **Ja**, wird der zuletzt empfangene Wert gespeichert und nach einem Neustart wiederhergestellt. Sonst gilt die dort eingestellte Vorbelegung (`Nichts (undefiniert)`, `Wert vom Bus lesen`, `Winter (0)` oder `Sommer (1)`).
 
-Bei den anderen Saison-Modi (Standard, Auto-DST, Festes Datum) wechselt der Manager automatisch; dieses KO ist dann nicht sichtbar.
+Bei den anderen Einstellungen (Aus, Automatisch, Festes Datum) wechselt der Lichtmanager selbst; dieses KO ist dann nicht sichtbar.
 <!-- DOCEND -->
 
 ### Adaptive Helligkeit
@@ -403,6 +383,9 @@ Verfügbare Modi:
 - **Tageslicht-Kompensation (Open-Loop)**: Misst das aktuelle Umgebungslicht und zieht es vom HCL-Sollwert ab. Je heller es draußen ist, desto weniger Kunstlicht wird eingeschaltet. Einfach und stabil, empfohlen für die meisten Räume.
 - **Konstantlichtregelung (Closed-Loop)**: Vergleicht den Sensorwert fortlaufend mit dem HCL-Sollwert und korrigiert die Leuchten laufend nach bis beide übereinstimmen. Geeignet wenn eine sehr genaue Beleuchtungsstärke erforderlich ist (z. B. Arbeitsplatz nach DIN EN 12464).
 <!-- DOCEND -->
+
+<!-- DOC Skip="1" -->
+<kbd>![Seite Adaptive Helligkeit mit Tageslicht-Kompensation](pics/lm-adaptive-helligkeit.png)</kbd>
 
 #### Adaptive Helligkeit (Modus)
 
@@ -583,8 +566,8 @@ Je Lichtmanager zwei Sollwert-KOs; Sichtbarkeit abhängig von Option **Status-KO
 
 ### Pro-Lichtmanager Kommunikationsobjekte
 
-#### LM x: Sommer aktiv (K04)
-1-Bit Eingang (DPT 1.001). Nur sichtbar bei `SeasonSource = Per KO`. Zustand wird im Flash persistiert.
+#### LM x: Eingang, Sommer=1 (K04)
+1-Bit Eingang (DPT 1.001). Nur sichtbar bei **Saisonale Umschaltung** = `Kommunikationsobjekt`. Der Zustand wird gespeichert, wenn unter Lichtmanager → Allgemein „Saisonalen Zustand speichern…" auf **Ja** steht.
 
 #### Helligkeitssensor (Lux)
 2-Byte Eingang (DPT 9.004). Eingang für die adaptive Helligkeitsregelung.
@@ -678,6 +661,9 @@ Quelle für die Phasen-Berechnung ist die interne Sonnenstands-Engine.
 | **Aus** | Fallback auf `SlewRateDay` (kein Wechsel) |
 
 Per-Kanal — kein Master-Aggregat. Jeder Kanal entscheidet eigenständig.
+
+<!-- DOC Skip="1" -->
+<kbd>![Seite HCL-Kurve mit Slew-Rate und Astro-Quelle](pics/lm-hcl-kurve.png)</kbd>
 <!-- DOCEND -->
 
 <!-- DOC HelpContext="HCL-Profile" -->
@@ -697,6 +683,9 @@ Jedes Profil besitzt eine **Wochentag-/Sonderbedingungs-Maske** (16 Bit, davon 1
 | 11 | Winter |
 
 **Selektor-Spezifität**: Profile mit konkreter Wochentag-/Saison-Übereinstimmung gewinnen gegen Default-Fallback. Bei mehreren passenden Profilen gewinnt das Profil mit der höchsten Spezifität (Anzahl gesetzter, matchender Bits).
+
+<!-- DOC Skip="1" -->
+<kbd>![Profil Werktag mit Wochentagen und drei Stützpunkten](pics/lm-profil.png)</kbd>
 <!-- DOCEND -->
 
 <!-- DOC HelpContext="HCL-Stuetzpunkte" -->
@@ -716,16 +705,19 @@ Anker werden in `tickAstro()` aus dem aktuellen Sonnenstand aufgelöst; ein DST-
 <!-- DOC HelpContext="HCL-Saison-Quelle" -->
 ## Saison-Quelle (F7-Hybrid)
 
-Per-Master `SeasonSource`:
+Parameter **Saisonale Umschaltung** (`SeasonSource`) je Lichtmanager:
 
-- **Aus**: Profile mit Sommer/Winter-Bit matchen nicht (saison-neutral). Sommer-Stützpunkte deaktiviert.
-- **Automatisch (DST)**: nutzt System-DST-Flag; optional `SeasonOffsetDays` für regionale Verschiebung.
-- **Festes Datum**: `SummerStart`/`SummerEnd` als (Monat, Tag); unterstützt Jahreswechsel-Übergang (Südhalbkugel).
-- **Per KO**: K04 `SeasonInput` (DPT 1.001) schaltet zur Laufzeit.
+- **Aus**: Profile mit der Saison `Sommer` oder `Winter` werden nicht gewählt (saison-neutral).
+- **Automatisch (Astro + Offset)**: automatische Bestimmung; **Saison-Offset** (`SeasonOffsetDays`, −90…+90 Tage) verschiebt den Wechsel.
+- **Festes Datum**: **Sommer-Beginn** / **Sommer-Ende** als (Monat, Tag); unterstützt Jahreswechsel-Übergang (Südhalbkugel).
+- **Kommunikationsobjekt**: K04 `LM x: Eingang, Sommer=1` (DPT 1.001) schaltet zur Laufzeit.
 
-**Initialisierung** (`SummerActiveInit`): Nichts / Vom Bus lesen / Winter (0) / Sommer (1).
+**Vorbelegung** (`SummerActiveInit`, unter Lichtmanager → Allgemein): `Nichts (undefiniert)` / `Wert vom Bus lesen` / `Winter (0)` / `Sommer (1)`.
 
 **Persistenz** (`SummerActiveSavePower=Ja`): letzter K04-Wert in `OpenKNX::Flash` (Per-Master Slot `{magic:0x03, summerActive:bool}`); überschreibt Init beim Reboot. Bei `Nein` wird der Slot mit `0x00`-Bytes überschrieben. Magic 0x03 ⇒ Layout-Mismatch (z. B. alter 0x02-Block) wird erkannt und ignoriert.
+
+<!-- DOC Skip="1" -->
+<kbd>![Saisonale Umschaltung mit festem Datum](pics/lm-kanal-saison.png)</kbd>
 <!-- DOCEND -->
 
 <!-- DOC HelpContext="HCL-Sperre-Kanal" -->
@@ -816,17 +808,17 @@ Per-SP **ExtColorTempMode** + **ExtMixPercent** erlauben gezieltes Mischen (z. B
 - Lichtmanager global aktiviert?
 - Manager im Konsumenten-Modul zugewiesen?
 - Manager in der **Kanalauswahl** aktiviert und nicht **Suspendiert**?
-- Bei `FixedTime`/`SunPosition`: mind. 2 gültige Stützpunkte?
-- Bei `Manual`: gewünschte manuelle Farbtemperatur gesetzt und optionaler Helligkeitsverlauf passend parametriert?
-- Bei `Astronomischer Sonnenstand`: sinnvolle Astro-Min/Max-Werte gesetzt?
+- Gilt heute ein Profil? Mindestens ein Profil muss aktiv sein und unter **Gilt für** den aktuellen Wochentag (bzw. Urlaub/Feiertag) enthalten.
+- Hat das Profil Stützpunkte mit sinnvollen Uhrzeiten bzw. Astro-Typen?
+- Bei Astro-Stützpunkten: Standort und Zeitzone in den OpenKNX-Basisparametern gesetzt bzw. bei **Astro-Quelle** `Manuell` Sonnenauf- und -untergang eingetragen?
 - Globale/spezifische Sperre aktiv?
 
 ### Saison-Profil schaltet nicht um
-- Saison-Modus ist `Standard`? → dann sind Sommer-Stützpunkte absichtlich deaktiviert.
-- Bei Modus `Festes Datum`: Start- und Ende-Datum korrekt eingetragen? Datum liegt im aktiven Bereich?
-- Bei Modus `Auto-DST`: Systemzeit korrekt? DST-Erkennung setzt korrekte Uhrzeit voraus.
-- Bei Modus `Per Objekt`: KO `LM x: Sommer aktiv` mit GA verbunden und Wert `1` gesendet?
-- Im Sommer-Profil mindestens 2 Stützpunkte mit **Sommer Aktiv = Ja** vorhanden (bei `FixedTime`/`SunPosition`)?
+- **Saisonale Umschaltung** steht auf `Aus`? → Dann werden Profile mit der Saison `Sommer` oder `Winter` nicht gewählt.
+- Ist bei den Profilen die **Saison** passend gesetzt (`Sommer`, `Winter`, `Sommer + Winter` oder `Fallback`)?
+- Bei `Festes Datum`: Sommer-Beginn und Sommer-Ende korrekt eingetragen? Liegt das Datum im Bereich?
+- Bei `Automatisch (Astro + Offset)`: Systemzeit und Datum korrekt?
+- Bei `Kommunikationsobjekt`: KO `LM x: Eingang, Sommer=1` mit einer GA verbunden und Wert `1` gesendet?
 
 <!-- DOC -->
 ## Lizenz und Haftung
